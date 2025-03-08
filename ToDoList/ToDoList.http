@@ -1,0 +1,34 @@
+﻿@ToDoList_HostAddress = https://localhost:7290
+
+GET {{ToDoList_HostAddress}}/api/taak/taakitems
+
+###
+
+GET {{ToDoList_HostAddress}}/api/taak/21
+
+###
+
+POST {{ToDoList_HostAddress}}/api/taak
+Content-Type: application/json
+
+{
+  "title": "apitest",
+  "description": "apidescription"
+}
+
+###
+
+PUT {{ToDoList_HostAddress}}/api/taak/21
+Content-Type: application/json
+
+{
+    "id": 21,
+    "title": "apitestverandert",
+    "description": "apidescriptionverandert"
+}
+
+###
+
+DELETE {{ToDoList_HostAddress}}/api/taak/21
+
+###
