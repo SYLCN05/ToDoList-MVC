@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ToDoList.Data;
 
@@ -11,9 +12,11 @@ using ToDoList.Data;
 namespace ToDoList.Migrations
 {
     [DbContext(typeof(ToDoListDBContext))]
-    partial class ToDoListDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250309210601_aanpassingtaak")]
+    partial class aanpassingtaak
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,7 +66,7 @@ namespace ToDoList.Migrations
                             CreatedDateTime = new DateTime(2025, 3, 2, 20, 30, 0, 0, DateTimeKind.Unspecified),
                             Description = "Dit is de beschrijving voor taak 2",
                             Title = "Test Taak2",
-                            Type = 1
+                            Type = 0
                         },
                         new
                         {
@@ -71,7 +74,7 @@ namespace ToDoList.Migrations
                             CreatedDateTime = new DateTime(2025, 3, 3, 21, 30, 0, 0, DateTimeKind.Unspecified),
                             Description = "Dit is de beschrijving voor taak 3",
                             Title = "Test Taak3",
-                            Type = 2
+                            Type = 0
                         },
                         new
                         {

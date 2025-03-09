@@ -18,6 +18,18 @@
         <div id="container" class="d-flex w-50 justify-content-center align-content-center card bg-light" style="margin:0 auto; padding:10px; margin-bottom:10px;">
             <h3>@obj.Title</h3>
             <p>@obj.Description</p>
+            @if(obj.Type == TaakType.Normaal)
+            {
+                <h5>@obj.Type</h5>
+            }
+            else if(@obj.Type == TaakType.Urgent)
+            {
+                <h5 class="text-danger">@obj.Type</h5>
+            }
+            else
+            {
+                <h5 class="text-info">@obj.Type</h5>
+            }
             <h5>@obj.CreatedDateTime</h5>
             <div class="btn-group align-items-center justify-content-sm-between" style="width:60px;" role="group">
                 <a class="btn btn-primary" style="position:relative; left:5px;" asp-controller="Task" asp-action="Edit" asp-route-id="@obj.Id"><i class="bi bi-pencil-square"></i>Edit</a>

@@ -12,6 +12,12 @@
         <label asp-for="Description">beschrijving</label>
         <textarea asp-for=Description class="form-control" id="beschrijving" placeholder="beschrijving"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
+        <label asp-for="Type">Type taak</label>
+        <select asp-for="Type" class="form-select">
+            <option>Normaal</option>
+            <option>Urgent</option>
+            <option>Onzeker</option>
+        </select>
         <input class="btn btn-success btn" type="submit" name="versturen" value="Update" asp-controller="Task" asp-action="Edit" style="top:20px" />
         <a class="btn btn-primary" style="position:relative; bottom:-40px;" asp-controller="Home" asp-action="Index">Terug naar overzicht</a>
     </form>

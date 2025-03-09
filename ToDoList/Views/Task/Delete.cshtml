@@ -11,6 +11,12 @@
         <input asp-for="Title" class="form-control" id="title" type="text" placeholder="Title" disabled />
         <label asp-for="Description">beschrijving</label>
         <textarea asp-for=Description class="form-control" id="beschrijving" placeholder="beschrijving" disabled ></textarea>
+        <label asp-for="Type">Type taak</label>
+        <select asp-for="Type" class="form-select" disabled>
+            <option>Normaal</option>
+            <option>Urgent</option>
+            <option>Onzeker</option>
+        </select>
         <input class="btn btn-danger " type="submit" name="versturen" value="Delete" asp-controller="Task" asp-action="DeletePost" style="top:20px" />
         <a class="btn btn-primary" style="position:relative; bottom:-40px;" asp-controller="Home" asp-action="Index">Terug naar overzicht</a>
     </form>

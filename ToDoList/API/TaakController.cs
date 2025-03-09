@@ -41,7 +41,12 @@ namespace ToDoList.API
         {
             if (ModelState.IsValid)
             {
-                _context.Taken.Add(taak);
+                var nieuweTaak = TaakFactory.CreateTask(taak.Type);
+                nieuweTaak.Title = taak.Title;
+                nieuweTaak.Description = taak.Description;
+                nieuweTaak.CreatedDateTime = DateTime.Now;
+
+                _context.Add(nieuweTaak);
                 _context.SaveChanges();
                 return Ok();
             }
