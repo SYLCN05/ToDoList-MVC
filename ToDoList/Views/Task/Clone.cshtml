@@ -1,0 +1,17 @@
+﻿@model Taak
+
+<div class="d-flex align-content-center justify-content-sm-center" style="margin-top:20px;">
+    <form class="d-flex flex-column w-50 justify-content-sm-center" method="post" asp-controller="Task" asp-action="CloneTaak">
+        <h1 class="text-center text-body" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Clone Taak</h1>
+        <label asp-for="Id">Taak ID om te klonen</label>
+        <input asp-for="Id" name="id" class="form-control" type="number" placeholder="Taak ID" required />
+        <button type="submit" class="btn btn-success" style="top:20px;">Clonen</button>
+        <a class="btn btn-primary" style="position:relative; bottom:-40px;" asp-controller="Home" asp-action="Index">Terug naar overzicht</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}

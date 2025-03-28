@@ -12,7 +12,7 @@
     <header>
         <nav class="navbar navbar-expand-lg bg-light" data-bs-theme="light">
             <div class="container-fluid">
-                <a class="navbar-brand text-body" asp-controller="Home" asp-action="Index">ToDo</a>
+                <a class="navbar-brand text-body" asp-controller="Home" asp-action="Index">YouList</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -22,7 +22,7 @@
                             <a class="nav-link " asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link " asp-area="" asp-controller="Task" asp-action="Index">Tasks</a>
+                            <a class="nav-link " asp-area="" asp-controller="Task" asp-action="Index">Taken</a>
                         </li>
                         @* <li class="nav-item">
                             <a class="nav-link" href="#">Pricing</a>
@@ -43,7 +43,7 @@
                     </ul>
                     <form class="d-flex" asp-action="Search" method="post">
                         @* <input class="form-control me-sm-2" type="search" placeholder="Search"> *@
-                        <button asp-controller="Task" asp-action="Search" class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+                        <button asp-controller="Task" asp-action="Search" class="btn btn-secondary my-2 my-sm-0" type="submit">Zoeken</button>
                     </form>
                 </div>
             </div>
@@ -55,9 +55,9 @@
         </main>
     </div>
 
-    <footer class=" footer text-muted bg-light-subtle">
+    <footer class=" footer text-muted bg-body-emphasis">
         <div class="container">
-            &copy; 2025 - ToDoList - <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+            &copy; Siyar Yalcin 2025 - <a asp-controller="Home" asp-action="Index">Home</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

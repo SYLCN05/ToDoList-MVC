@@ -1,6 +1,50 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+@model List<Taak>;
 
+<div class="container text-wrap w-75 d-flex justify-content-center align-items-center flex-column shadow" style=" position:relative; top: 70px; font-family:'Segoe UI'">
+  
+    <h1 style="font-weight:700;">YouList</h1>
+    <h3>Jouw persoonlijke to-do lijst, altijd binnen handbereik</h3>
+    <p class="text-wrap">Met YouList kun je eenvoudig taken toevoegen, bewerken en verwijderen. 
+        Gebruik de zoekfunctie om snel taken te vinden en markeer belangrijke taken met highlights. 
+        Stel urgentie in om te bepalen wat prioriteit heeft en houd je workflow strak georganiseerd.</p>
+</div>
+<br />
+<div class="container d-flex justify-content-center flex-row justify-content-between " style="position:relative; top:250px;">
+    <div class=" shadow m-2 d-flex justify-content-center align-items-center flex-column rounded-3 ">
+        <h5 style="color:blue">Stap 1: Ga naar de takenpagina</h5>
+        <p style="color:cornflowerblue">Open de takenpagina in YouList om een nieuwe taak aan te maken. 
+            Hier zie je een overzicht van je huidige taken en de optie om 
+            een nieuwe taak toe te voegen.</p>
+        <a class="btn btn-primary" asp-controller="Task" asp-action="Index">Taken Pagina</a>
+    </div>
+    <div class=" shadow m-2 d-flex justify-content-center align-items-center flex-column rounded-3">
+        <h5 style=" color:blue">Stap 2: Vul je taakgegevens in</h5>
+        <p style="color:cornflowerblue">Voer de details van je taak in, zoals de titel, een beschrijving en de urgentie.
+            Je kunt ook aangeven of de taak gemarkeerd moet worden als belangrijk.</p>
+        <a class="btn btn-primary" asp-controller="Task" asp-action="Create">Creëer een Taak</a>
+    </div>
+    <div class=" shadow m-2 d-flex justify-content-center align-items-center flex-column rounded-3">
+        <h5 style=" color:blue">Stap 3: Verstuur je taak</h5>
+        <p style="color:cornflowerblue">Klik op de knop om je taak op te slaan. Je nieuwe taak verschijnt direct in het takenoverzicht,
+            zodat je altijd overzicht hebt over wat er nog moet gebeuren.</p>
+        <a class="btn btn-primary" asp-controller="Task" asp-action="Index">Bekijk je taken</a>
+    </div>
+</div>
+<br />
+<div class="container w-50" style="position:relative; top:300px;">
+    <div class=" shadow m-2 d-flex justify-content-center align-items-center flex-column rounded-3">
+        @{
+            int takenCount = 0;
 
-
+            @foreach (var taak in Model)
+            {
+                takenCount++;
+            }
+        }
+        <h5>Je hebt nog @takenCount taken die openstaan</h5>
+        <a class="btn btn-primary" asp-controller="Task" asp-action="Index">Bekijk Alle Taken</a>
+    </div>
+</div>

@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToDoList.Data;
+using ToDoList.Factories;
+using ToDoList.Interfaces;
 using ToDoList.Models;
+using ToDoList.Services;
 // via deze controller heb ik een api opgesteld die json data returned
 namespace ToDoList.API
 {
@@ -10,24 +13,26 @@ namespace ToDoList.API
     public class TaakController : ControllerBase
     {
 
+        private readonly ITaskRepository _repository;
         private readonly ToDoListDBContext _context;
-        public TaakController(ToDoListDBContext context)
+        public TaakController(ITaskRepository repository, ToDoListDBContext context)
         {
+            _repository = repository;
             _context = context;
         }
 
 
         [HttpGet("taakitems")]
-        public ActionResult<IEnumerable<Taak>> GetTaken()
+        public async Task<ActionResult<IEnumerable<Taak>>> GetTaken()
         {
-            var taken = _context.Taken.ToList();
+            var taken =  await _repository.GetAllAsync();
             return Ok(taken);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Taak>> GetTaak(int id)
         {
-            var taak = await _context.Taken.FindAsync(id);
+            var taak = await _repository.GetByIdAsync(id);
 
             if (taak == null)
             {
@@ -37,24 +42,39 @@ namespace ToDoList.API
         }
 
         [HttpPost]
-        public ActionResult<Taak> PostTaak(Taak taak)
+        public async Task<ActionResult<Taak>> PostTaak(Taak taak)
         {
+            if (taak == null)
+            {
+                return BadRequest(ModelState);
+            }
+
             if (ModelState.IsValid)
             {
                 var nieuweTaak = TaakFactory.CreateTask(taak.Type);
                 nieuweTaak.Title = taak.Title;
                 nieuweTaak.Description = taak.Description;
                 nieuweTaak.CreatedDateTime = DateTime.Now;
+                nieuweTaak.IsHighlighted = taak.IsHighlighted;
 
-                _context.Add(nieuweTaak);
-                _context.SaveChanges();
-                return Ok();
+                if (taak.IsHighlighted)
+                {
+                    var highlightedTaak = new HighlightTaskDecorator(nieuweTaak);
+                    nieuweTaak.Title = highlightedTaak.Title;
+                }
+
+                var success = await _repository.AddAsync((Taak)nieuweTaak);
+                if (success) 
+                {
+                    return Ok(nieuweTaak);
+                }
             }
+           
             return BadRequest();
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateTaak(int id, Taak taak)
+        public async Task<ActionResult> UpdateTaak(int id, Taak taak)
         {
             if (id != taak.Id || !ModelState.IsValid)
             {
@@ -63,41 +83,53 @@ namespace ToDoList.API
 
             try
             {
-                _context.Taken.Update(taak);
-                _context.SaveChanges();
-                return Ok();
+                var success = await _repository.UpdateAsync(taak);
+
+                if (success) 
+                {
+                    return Ok();
+                }
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
+            return NotFound();
         }
 
         [HttpDelete("{id}")]
-        public ActionResult DeleteTaak(int id) 
+        public async Task<ActionResult> DeleteTaak(int id) 
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
 
             try
             {
-                var task= _context.Taken.Find(id);
+                var success = await _repository.DeleteAsync(id);
 
-                if(task == null)
+                if (success) 
                 {
-                    return NotFound();
+                    return Ok();
                 }
-
-                _context.Taken.Remove(task);
-                _context.SaveChanges();
-                return Ok();
             }
             catch(Exception ex)
             {
                 return BadRequest(ex.Message);
             }
+            return NotFound();
+        }
+
+        [HttpPost("clone/{id}")]
+        public ActionResult<Taak> CloneTaak(int id)
+        {
+            var taak = _context.Taken.Find(id);
+            if (taak == null)
+            {
+                return NotFound();
+            }
+
+            var clonedTaak = (Taak)taak.Clone();
+            _context.Taken.Add(clonedTaak);
+            _context.SaveChanges();
+            return Ok(clonedTaak);
         }
     }
 }

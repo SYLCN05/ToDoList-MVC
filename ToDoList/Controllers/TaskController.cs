@@ -2,7 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using ToDoList.Data;
+using ToDoList.Interfaces;
 using ToDoList.Models;
+using ToDoList.Observer;
+using ToDoList.Services;
 //deze controller roept mijn api op en gebruikt de gegevens die die returned in  de view
 namespace ToDoList.Controllers
 {
@@ -10,36 +13,28 @@ namespace ToDoList.Controllers
     {
         private readonly ToDoListDBContext _context;
         private readonly HttpClient _httpClient;
-
-        public TaskController(ToDoListDBContext context, HttpClient httpClient)
+        private readonly Taskmanager _taskManager;
+        private readonly IListener _taskEditListener, _taskDeleteListener;
+        private readonly TaakContext _taakContext;
+        private readonly ApiFacade _apiFacade;
+        public TaskController(ToDoListDBContext context, HttpClient httpClient, Taskmanager taskManager, TaakEditListener taakEditListener, TaakDeleteListener taakDeleteListener,TaakContext taakContext, ApiFacade apifacade )
         { 
             _context= context;
             _httpClient = httpClient;
+            _taskManager = taskManager;
+            _taskManager.AddListner(taakEditListener);
+            _taskManager.AddListner(taakDeleteListener);
+            _taakContext = taakContext;
+            _apiFacade = apifacade;
+     
         }
         public async Task<IActionResult> Index()
         {
-            try
-            {
-                var response = await _httpClient.GetAsync("https://localhost:7290/api/taak/taakitems");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonString = await response.Content.ReadAsStringAsync();
-                    var taken = JsonConvert.DeserializeObject<List<Taak>>(jsonString);
-                    return View(taken);
-                }
-                else
-                {
-                    return View(new List<Taak>());
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"Request error: {ex.Message}");
-                return View(new List<Taak>());
-            }
+           var taken = await _apiFacade.GetAllTakenAsync();
+           return View(taken);
             
         }
+
 
         //GET
         public IActionResult Create()
@@ -51,124 +46,72 @@ namespace ToDoList.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Taak obj)
         {
-            try
+            if (ModelState.IsValid)
             {
-               
-                var jsonContent = JsonConvert.SerializeObject(obj);
-                var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
-
-                
-                var response = await _httpClient.PostAsync("https://localhost:7290/api/taak", content);
-
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    
-                    TempData["Created"] = "Uw taak is succesvol aangemaakt";
+                    var creatTaskCommand = new CreateTaskCommand(_apiFacade, obj);
+                    await creatTaskCommand.ExecuteAsync();
+
+                    TempData["Created"] = "uw taak is succesvol aangemaakt";
                     return RedirectToAction("Index");
                 }
-                else
+                catch (Exception ex) 
                 {
-                    
-                    Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                    TempData["Error"] = $"er ging iets fout bij het creeren van een taak {ex.Message}";
                     return View(obj);
                 }
+                
             }
-            catch (HttpRequestException ex)
-            {
-               
-                Console.WriteLine($"Request error: {ex.Message}");
-                return View(obj);
-            }
+            return BadRequest();
+             
         }
 
         //GET
-        public  async Task<IActionResult> Edit(int? id)
+        public  async Task<IActionResult> Edit(int? id, Taak obj)
         {
-            try
+            if(id != null)
             {
-                var response = await _httpClient.GetAsync($"https://localhost:7290/api/taak/{id}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonString = await response.Content.ReadAsStringAsync();
-                    var taak = JsonConvert.DeserializeObject<Taak>(jsonString);
-                    return View(taak);
-                }
-                else
-                {
-                    return View();
-                }
+                var taak = await _apiFacade.GetTaakAsync(id);
+                return View(taak);
             }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Request error: {ex.Message}");
-                return View();
-            }
-
-            
+            TempData["Error"] = "Fout bij het ophalen van de taak die bijgewerkt moet worden";
+            return View("Index");
+           
 
         }
 
         //POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Taak obj, int id)
+        public async Task<IActionResult> Edit(Taak obj, int? id)
         {
-            if (obj == null || id == 0) 
+            if (obj == null || id == 0)
             {
                 return NotFound();
             }
+
+            var UpdatedTaak = await _apiFacade.UpdateTaak(id, obj);
+
+            if (UpdatedTaak.Success)
+            {
+                TempData["Edited"] = _taskManager.Notify("Edit");
+                return RedirectToAction("Index");
+            }
             else
             {
-                try
-                {
-                    var jsonContent = JsonConvert.SerializeObject(obj);
-                    var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PutAsync($"https://localhost:7290/api/taak/{id}", content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        TempData["Edited"] = "uw taak is succesvol geupdate";
-                        return RedirectToAction("index");
-                    }
-                    else
-                    {
-                        return View(obj);
-                    }
-
-                }
-                catch (Exception ex) 
-                {
-                    Console.WriteLine($"Request error: {ex.Message}");
-                    return View();  
-                }
+                TempData["Error"] = "Fout bij het bijwerken van de taak";
+                return View(obj);
             }
+           
         }
 
 
         //Get
-        public async Task<IActionResult> Delete( int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            try            
-            {
-                var response = await _httpClient.GetAsync($"https://localhost:7290/api/taak/{id}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonString = await response.Content.ReadAsStringAsync();
-                    var taak = JsonConvert.DeserializeObject<Taak>(jsonString);
-                    return View(taak);
-                }
-                else
-                {
-                    return View();
-                }
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Error Message: {ex.Message}");
-                return View();
-            }
+            var taak = await _apiFacade.GetTaakAsync(id);
+            return View(taak);
             
         }
 
@@ -184,27 +127,18 @@ namespace ToDoList.Controllers
 
             try
             {
+                var deletedTaakCommand = new DeleteTaskCommand(_apiFacade, id);
+                await deletedTaakCommand.ExecuteAsync();
 
-                var response = await _httpClient.DeleteAsync($"https://localhost:7290/api/taak/{id}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    TempData["Deleted"] = "uw taak is succesvol verwijderd";
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    return View();
-                }
-
-
+                TempData["Deleted"] = _taskManager.Notify("Delete");
+                return RedirectToAction("Index");
             }
-            catch(Exception ex)
+            catch (Exception ex) 
             {
-                Console.WriteLine($"Error Message: {ex.Message}");
-                return View("Index");
+                TempData["Error"] = $"Er ging iets fout bij het verwijderen van een taak {ex.Message}";
             }
-
+            return BadRequest();
+            
         }
 
         //Post
@@ -219,5 +153,79 @@ namespace ToDoList.Controllers
 
         }
         
+        public IActionResult Clone()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CloneTaak(int id)
+        {
+
+            if (id <= 0) // Controleert voor een geldige id
+            {
+                TempData["Error"] = "Ongeldig taak-ID";
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                var response = await _httpClient.PostAsync($"https://localhost:7290/api/taak/clone/{id}", null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Cloned"] = "Gelukt! Uw taak is succesvol gecloned!";
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    Console.WriteLine($"response: {response.ReasonPhrase} - {response.StatusCode}");
+                    TempData["Error"] = "Fout bij het klonen van de taak.";
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Foutmelding: {ex.Message}");
+                TempData["Error"] = "Er is een probleem opgetreden bij de server.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        public IActionResult ExecuteTaak(int id, string strategyType)
+        {
+            var taak = _context.Taken.Find(id);
+            if(taak == null)
+            {
+                TempData["Error"] = "Taak niet gevonden";
+                return RedirectToAction("Index");
+            }
+
+            if(strategyType == "Normaal")
+            {
+                _taakContext.SetStrategy(new NormaalTaakStrategy());
+
+            }
+            else if(strategyType == "Urgent")
+            {
+                _taakContext.SetStrategy(new UrgentTaakStrategy());
+            }
+            else if(strategyType == "Onzeker")
+            {
+                _taakContext.SetStrategy(new OnzekerTaakStrategy());
+            }
+
+            TempData["Created"] = $"Taak: {taak.Title}  {_taakContext.ExecuteStrategy(taak)} strategie";
+            return RedirectToAction("Index");
+        }
+
+
+
+
+
+
+
+
     }
 }

@@ -1,21 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using ToDoList.Models;
+using ToDoList.Services;
 
 namespace ToDoList.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+       
+        private readonly ApiFacade _apiFacade;
+        public HomeController(ApiFacade apiFacade)
         {
-            _logger = logger;
+           _apiFacade = apiFacade;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var taken = await _apiFacade.GetAllTakenAsync();
+            return View(taken);
         }
 
         

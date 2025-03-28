@@ -6,5 +6,7 @@
         string Title { get; set; }
         string Description { get; set; }
         DateTime CreatedDateTime { get; set; }
+        bool IsHighlighted { get; set; }
+        ITask Clone();
     }
 }
